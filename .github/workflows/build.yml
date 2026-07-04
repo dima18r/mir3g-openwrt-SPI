@@ -42,6 +42,12 @@ jobs:
             ../diy.sh
           fi
 
+      - name: Upload DTS for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: dts-file
+          path: openwrt/target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts
+
       - name: Load custom config
         run: |
           if [ -f ./config.seed ]; then
