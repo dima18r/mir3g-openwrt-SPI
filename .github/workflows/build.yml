@@ -28,6 +28,16 @@ jobs:
         run: |
           git clone --depth 1 -b openwrt-24.10 https://github.com/openwrt/openwrt.git openwrt
 
+      - name: Cache OpenWrt Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            openwrt/dl
+            openwrt/staging_dir
+          key: ${{ runner.os }}-openwrt-${{ hashFiles('openwrt/feeds.conf.default', 'openwrt/include/target.mk') }}
+          restore-keys: |
+            ${{ runner.os }}-openwrt-
+
       - name: Update and install feeds
         run: |
           cd openwrt
