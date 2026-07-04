@@ -60,12 +60,15 @@ jobs:
 
       - name: Load custom config
         run: |
-          if [ -f ./config.seed ]; then
-            cp ./config.seed openwrt/.config
+          # Сначала копируем файл из корня репозитория в папку openwrt под именем .config
+          if [ -f config.seed ]; then
+            cp config.seed openwrt/.config
           fi
+          
+          # Только ПОСЛЕ этого заходим в папку openwrt и генерируем финальные зависимости
           cd openwrt
           make defconfig
-
+          
       - name: Upload .config for inspection
         uses: actions/upload-artifact@v4
         with:
