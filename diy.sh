@@ -123,44 +123,63 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	nvmem-cell-names = "mac-address";
 };
 
+// google AI
 &gmac1 {
 	status = "okay";
 	label = "wan";
-	phy-handle = <&ethphy0>;
+	phy-handle = <&ethphy4>; // Физический WAN
 	nvmem-cells = <&macaddr_factory_e006>;
 	nvmem-cell-names = "mac-address";
 };
-
 &mdio {
-	ethphy0: ethernet-phy@0 {
-		reg = <0>;
-	};
+	ethphy4: ethernet-phy@4 { reg = <4>; };
 };
-
 &switch0 {
 	ports {
-		port@1 {
-			status = "okay";
-			label = "wan";
-		};
-
-		port@2 {
-			status = "okay";
-			label = "lan2";
-		};
-
-		port@3 {
-			status = "okay";
-			label = "lan1";
-		};
-
-		port@6 {
-			status = "okay";
-			label = "cpu";
-			ethernet = <&gmac0>;
-		};
+		port@0 { status = "okay"; label = "lan0"; }; // LAN 1
+		port@1 { status = "okay"; label = "lan1"; }; // LAN 2
 	};
 };
+// Google AI
+
+//&gmac1 {
+//	status = "okay";
+//	label = "wan";
+//	phy-handle = <&ethphy0>;
+//	nvmem-cells = <&macaddr_factory_e006>;
+//	nvmem-cell-names = "mac-address";
+//};
+
+//&mdio {
+//	ethphy0: ethernet-phy@0 {
+//		reg = <0>;
+//	};
+//};
+
+//&switch0 {
+//	ports {
+//		port@1 {
+//			status = "okay";
+//			label = "wan";
+//		};
+
+//		port@2 {
+//			status = "okay";
+//			label = "lan2";
+//		};
+
+//		port@3 {
+//			status = "okay";
+//			label = "lan1";
+//		};
+
+//		port@6 {
+//			status = "okay";
+//			label = "cpu";
+//			ethernet = <&gmac0>;
+//		};
+//	};
+//};
 
 &xhci {
 	status = "okay";
