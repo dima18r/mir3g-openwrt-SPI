@@ -60,12 +60,12 @@ jobs:
 
       - name: Load custom config
         run: |
-          # Сначала копируем файл из корня репозитория в папку openwrt под именем .config
+          # Проверяем и копируем файл из корня репозитория
           if [ -f config.seed ]; then
             cp config.seed openwrt/.config
           fi
           
-          # Только ПОСЛЕ этого заходим в папку openwrt и генерируем финальные зависимости
+          # Заходим в папку и разворачиваем зависимости
           cd openwrt
           make defconfig
           
