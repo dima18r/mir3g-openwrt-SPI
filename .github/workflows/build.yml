@@ -1,4 +1,4 @@
-name: Build OpenWrt
+name: Build OpenWrt for Xiaomi Mi Router 3G (NOR mod)
 
 on:
   workflow_dispatch:
@@ -28,16 +28,6 @@ jobs:
         run: |
           git clone --depth 1 -b openwrt-24.10 https://github.com/openwrt/openwrt.git openwrt
 
-      - name: Cache OpenWrt Build
-        uses: actions/cache@v4
-        with:
-          path: |
-            openwrt/dl
-            openwrt/staging_dir
-          key: ${{ runner.os }}-openwrt-${{ hashFiles('openwrt/feeds.conf.default', 'openwrt/include/target.mk') }}
-          restore-keys: |
-            ${{ runner.os }}-openwrt-
-
       - name: Update and install feeds
         run: |
           cd openwrt
@@ -60,30 +50,19 @@ jobs:
 
       - name: Load custom config
         run: |
-          # 1. Принудительно копируем конфиг без условий 'if'
-          cp config.seed openwrt/.config
-          
+          cp ./config.seed openwrt/.config
           cd openwrt
-          
-          # 2. Жестко фиксируем архитектуру в конфиге, чтобы defconfig не прыгал на x86
-          echo "CONFIG_TARGET_ramips=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          
-          # 3. Запускаем генерацию конфигурации
-          make defconfig
-          
-          # 4. Проверяем, выжил ли файл. Если он пустой, восстанавливаем копию для анализа!
-          if [ ! -s .config ]; then
-            echo "ВНИМАНИЕ: defconfig сбросил настройки! Копируем оригинал для анализа."
-            cp ../config.seed .config
-          fi
-          
+          make defconfig 2>&1 | head -50
+          echo "--- Проверка устройства в конфиге ---"
+          grep "mir3g-nor" .config || echo "ВНИМАНИЕ: устройство не найдено в конфиге!"
+          ls -la .config
+
       - name: Upload .config for inspection
         uses: actions/upload-artifact@v4
         with:
-          name: openwrt-config
-          path: ${{ github.workspace }}/openwrt/.config
-          
+          name: dotconfig
+          path: openwrt/.config
+
       - name: Download packages
         run: |
           cd openwrt
