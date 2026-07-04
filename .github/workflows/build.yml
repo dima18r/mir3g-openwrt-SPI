@@ -56,6 +56,12 @@ jobs:
           cd openwrt
           make defconfig
 
+      - name: Upload .config for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwrt-config
+          path: openwrt/.config
+          
       - name: Download packages
         run: |
           cd openwrt
