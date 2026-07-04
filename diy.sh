@@ -5,7 +5,7 @@ echo "=== Добавляем устройство xiaomi_mir3g-nor ==="
 
 DTS_FILE="target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts"
 
-# Пишем DTS через Python — надёжно, без проблем с escape-символами
+# 1. Пишем DTS через Python — без конфликтов меток и с отключенным PCIe под сгоревший Wi-Fi
 python3 << 'PYEOF'
 content = """// SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -123,68 +123,31 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	nvmem-cell-names = "mac-address";
 };
 
-// google AI
 &gmac1 {
 	status = "okay";
 	label = "wan";
-	phy-handle = <&ethphy4>; // Физический WAN
+	phy-handle = <&ethphy4>;
 	nvmem-cells = <&macaddr_factory_e006>;
 	nvmem-cell-names = "mac-address";
 };
-&mdio {
-	ethphy4: ethernet-phy@4 { reg = <4>; };
+
+// Безопасное переопределение существующего порта без duplicate_label
+&ethphy4 {
+	status = "okay";
 };
+
 &switch0 {
 	ports {
 		port@0 { status = "okay"; label = "lan0"; }; // LAN 1
 		port@1 { status = "okay"; label = "lan1"; }; // LAN 2
 	};
 };
-// Google AI
-
-//&gmac1 {
-//	status = "okay";
-//	label = "wan";
-//	phy-handle = <&ethphy0>;
-//	nvmem-cells = <&macaddr_factory_e006>;
-//	nvmem-cell-names = "mac-address";
-//};
-
-//&mdio {
-//	ethphy0: ethernet-phy@0 {
-//		reg = <0>;
-//	};
-//};
-
-//&switch0 {
-//	ports {
-//		port@1 {
-//			status = "okay";
-//			label = "wan";
-//		};
-
-//		port@2 {
-//			status = "okay";
-//			label = "lan2";
-//		};
-
-//		port@3 {
-//			status = "okay";
-//			label = "lan1";
-//		};
-
-//		port@6 {
-//			status = "okay";
-//			label = "cpu";
-//			ethernet = <&gmac0>;
-//		};
-//	};
-//};
 
 &xhci {
 	status = "okay";
 };
 
+// Полностью изолируем сгоревший Wi-Fi чип на шине PCIe
 &pcie {
 	status = "disabled";
 };
@@ -195,7 +158,7 @@ with open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts", "w") as f:
 
 print("DTS записан успешно")
 
-# Проверяем наличие фикса
+# Проверяем наличие фикса изоляции PCIe
 with open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts") as f:
     data = f.read()
     if '&pcie' in data and 'disabled' in data:
@@ -208,10 +171,11 @@ PYEOF
 echo "✓ DTS создан"
 
 # =====================================================
-# 2. Запись устройства в систему сборки
+# 2. Запись устройства в систему сборки (с очисткой от беспроводных пакетов)
 # =====================================================
 
 # Дописываем новое устройство в Makefile mt7621.mk
+# Исключаем беспроводные пакеты (-wpad, -kmod-mt7615...), так как чип мертв
 cat << 'EOF' >> target/linux/ramips/image/mt7621.mk
 
 define Device/xiaomi_mir3g-nor
@@ -219,12 +183,12 @@ define Device/xiaomi_mir3g-nor
   DEVICE_VENDOR := Xiaomi
   DEVICE_MODEL := Mi Router 3G (SPI NOR Mod)
   DEVICE_COMPAT_COMPATIBLE := xiaomi,mir3g-nor
-  DEVICE_PACKAGES := kmod-usb3 kmod-usb-storage kmod-fs-ext4
+  DEVICE_PACKAGES := kmod-usb3 kmod-usb-storage kmod-fs-ext4 -wpad-basic-mbedtls -kmod-mt7615e -kmod-mt7615-firmware -kmod-mt7603e -kmod-mt76x2e -kmod-mt76-core
 endef
 TARGET_DEVICES += xiaomi_mir3g-nor
 EOF
 
-echo "✓ Запись в mt7621.mk добавлена"
+echo "✓ Запись в mt7621.mk добавлена (пакеты оптимизированы под 16МБ без Wi-Fi)"
 
 # =====================================================
 # 3. Сетевые настройки
@@ -237,5 +201,5 @@ xiaomi_mir3g-nor_network() {
 }
 NETEOF
 
-echo "✓ Сетевые настройки добавлены"
+echo "✓ Сетевые настройки добавили"
 echo "=== Готово ==="
