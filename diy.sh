@@ -211,19 +211,18 @@ echo "✓ DTS создан"
 # 2. Запись устройства в систему сборки
 # =====================================================
 
-cat >> target/linux/ramips/image/mt7621.mk << 'MKEOF'
+# Дописываем новое устройство в Makefile mt7621.mk
+cat << 'EOF' >> target/linux/ramips/image/mt7621.mk
 
 define Device/xiaomi_mir3g-nor
-  $(Device/dsa-migration)
-  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Xiaomi
-  DEVICE_MODEL := Mi Router 3G
-  DEVICE_VARIANT := NOR mod
-  DEVICE_PACKAGES := kmod-usb3 kmod-usb-ledtrig-usbport uboot-envtools
+  DEVICE_MODEL := Mi Router 3G (SPI NOR Mod)
+  DEVICE_COMPAT_COMPATIBLE := xiaomi,mir3g-nor
+  DEVICE_PACKAGES := kmod-usb3 kmod-usb-storage kmod-fs-ext4
 endef
 TARGET_DEVICES += xiaomi_mir3g-nor
-MKEOF
+EOF
 
 echo "✓ Запись в mt7621.mk добавлена"
 
