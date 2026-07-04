@@ -58,4 +58,166 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 		compatible = "gpio-keys";
 
 		reset {
-			la
+			label = "reset";
+			gpios = <&gpio 18 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_RESTART>;
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "u-boot";
+				reg = <0x0 0x30000>;
+				read-only;
+			};
+
+			partition@30000 {
+				label = "u-boot-env";
+				reg = <0x30000 0x10000>;
+			};
+
+			factory: partition@40000 {
+				label = "factory";
+				reg = <0x40000 0x10000>;
+				read-only;
+
+				nvmem-layout {
+					compatible = "fixed-layout";
+					#address-cells = <1>;
+					#size-cells = <1>;
+
+					macaddr_factory_e000: macaddr@e000 {
+						reg = <0xe000 0x6>;
+					};
+
+					macaddr_factory_e006: macaddr@e006 {
+						reg = <0xe006 0x6>;
+					};
+				};
+			};
+
+			partition@50000 {
+				compatible = "denx,uimage";
+				label = "firmware";
+				reg = <0x50000 0xfb0000>;
+			};
+		};
+	};
+};
+
+&gmac0 {
+	nvmem-cells = <&macaddr_factory_e000>;
+	nvmem-cell-names = "mac-address";
+};
+
+&gmac1 {
+	status = "okay";
+	label = "wan";
+	phy-handle = <&ethphy0>;
+	nvmem-cells = <&macaddr_factory_e006>;
+	nvmem-cell-names = "mac-address";
+};
+
+&mdio {
+	ethphy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+&switch0 {
+	ports {
+		port@1 {
+			status = "okay";
+			label = "wan";
+		};
+
+		port@2 {
+			status = "okay";
+			label = "lan2";
+		};
+
+		port@3 {
+			status = "okay";
+			label = "lan1";
+		};
+
+		port@6 {
+			status = "okay";
+			label = "cpu";
+			ethernet = <&gmac0>;
+		};
+	};
+};
+
+&xhci {
+	status = "okay";
+};
+
+&pcie {
+	status = "disabled";
+};
+"""
+
+with open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts", "w") as f:
+    f.write(content)
+
+print("DTS записан успешно")
+
+# Проверяем наличие фикса
+with open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts") as f:
+    data = f.read()
+    if '&pcie' in data and 'disabled' in data:
+        print("OK: &pcie { status = disabled } найден в DTS")
+    else:
+        print("ОШИБКА: фикс PCIe не найден!")
+        exit(1)
+PYEOF
+
+echo "✓ DTS создан"
+
+# =====================================================
+# 2. Запись устройства в систему сборки
+# =====================================================
+
+cat >> target/linux/ramips/image/mt7621.mk << 'MKEOF'
+
+define Device/xiaomi_mir3g-nor
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
+  IMAGE_SIZE := 16064k
+  DEVICE_VENDOR := Xiaomi
+  DEVICE_MODEL := Mi Router 3G
+  DEVICE_VARIANT := NOR mod
+  DEVICE_PACKAGES := kmod-usb3 kmod-usb-ledtrig-usbport uboot-envtools
+endef
+TARGET_DEVICES += xiaomi_mir3g-nor
+MKEOF
+
+echo "✓ Запись в mt7621.mk добавлена"
+
+# =====================================================
+# 3. Сетевые настройки
+# =====================================================
+
+cat >> package/base-files/files/etc/board.d/02_network << 'NETEOF'
+
+xiaomi_mir3g-nor_network() {
+	ucidef_set_interfaces_lan_wan "lan1 lan2" "wan"
+}
+NETEOF
+
+echo "✓ Сетевые настройки добавлены"
+echo "=== Готово ==="
