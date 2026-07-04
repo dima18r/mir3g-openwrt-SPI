@@ -71,7 +71,7 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
+		spi-max-frequency = <50000000>;
 
 		partitions {
 			compatible = "fixed-partitions";
@@ -234,7 +234,7 @@ echo "✓ Запись в mt7621.mk добавлена"
 cat >> package/base-files/files/etc/board.d/02_network << 'NETEOF'
 
 xiaomi_mir3g-nor_network() {
-	ucidef_set_interfaces_lan_wan "lan1 lan2" "wan"
+	ucidef_set_interfaces_lan_wan "lan0 lan1" "wan"
 }
 NETEOF
 
