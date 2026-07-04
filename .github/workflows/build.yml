@@ -60,14 +60,23 @@ jobs:
 
       - name: Load custom config
         run: |
-          # Проверяем и копируем файл из корня репозитория
-          if [ -f config.seed ]; then
-            cp config.seed openwrt/.config
-          fi
+          # 1. Принудительно копируем конфиг без условий 'if'
+          cp config.seed openwrt/.config
           
-          # Заходим в папку и разворачиваем зависимости
           cd openwrt
+          
+          # 2. Жестко фиксируем архитектуру в конфиге, чтобы defconfig не прыгал на x86
+          echo "CONFIG_TARGET_ramips=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+          
+          # 3. Запускаем генерацию конфигурации
           make defconfig
+          
+          # 4. Проверяем, выжил ли файл. Если он пустой, восстанавливаем копию для анализа!
+          if [ ! -s .config ]; then
+            echo "ВНИМАНИЕ: defconfig сбросил настройки! Копируем оригинал для анализа."
+            cp ../config.seed .config
+          fi
           
       - name: Upload .config for inspection
         uses: actions/upload-artifact@v4
