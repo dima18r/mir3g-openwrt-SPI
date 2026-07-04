@@ -3,68 +3,59 @@ set -e
 
 echo "=== Добавляем устройство xiaomi_mir3g-nor ==="
 
-# =====================================================
-# 1. Создаём DTS по частям (без вложенных heredoc)
-# =====================================================
-
 DTS_FILE="target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts"
 
-printf '// SPDX-License-Identifier: GPL-2.0-or-later\n' > "$DTS_FILE"
-printf '/dts-v1/;\n\n' >> "$DTS_FILE"
-printf '#include "mt7621.dtsi"\n' >> "$DTS_FILE"
-printf '#include <dt-bindings/gpio/gpio.h>\n' >> "$DTS_FILE"
-printf '#include <dt-bindings/input/input.h>\n' >> "$DTS_FILE"
-printf '#include <dt-bindings/leds/common.h>\n\n' >> "$DTS_FILE"
+# Пишем DTS через Python — надёжно, без проблем с escape-символами
+python3 << 'PYEOF'
+content = """// SPDX-License-Identifier: GPL-2.0-or-later
 
-printf '/ {\n' >> "$DTS_FILE"
-printf '\tcompatible = "xiaomi,mir3g-nor", "mediatek,mt7621-soc";\n' >> "$DTS_FILE"
-printf '\tmodel = "Xiaomi Mi Router 3G (NOR mod)";\n\n' >> "$DTS_FILE"
-printf '\taliases {\n' >> "$DTS_FILE"
-printf '\t\tled-boot = &led_status_yellow;\n' >> "$DTS_FILE"
-printf '\t\tled-failsafe = &led_status_red;\n' >> "$DTS_FILE"
-printf '\t\tled-running = &led_status_blue;\n' >> "$DTS_FILE"
-printf '\t\tled-upgrade = &led_status_yellow;\n' >> "$DTS_FILE"
-printf '\t};\n\n' >> "$DTS_FILE"
-printf '\tchosen {\n' >> "$DTS_FILE"
-printf '\t\tbootargs = "console=ttyS0,115200n8";\n' >> "$DTS_FILE"
-printf '\t};\n\n' >> "$DTS_FILE"
-printf '\tleds {\n' >> "$DTS_FILE"
-printf '\t\tcompatible = "gpio-leds";\n\n' >> "$DTS_FILE"
-printf '\t\tled_status_red: led-0 {\n' >> "$DTS_FILE"
-printf '\t\t\tfunction = LED_FUNCTION_INDICATOR;\n' >> "$DTS_FILE"
-printf '\t\t\tcolor = <LED_COLOR_ID_RED>;\n' >> "$DTS_FILE"
-printf '\t\t\tgpios = <&gpio 6 GPIO_ACTIVE_LOW>;\n' >> "$DTS_FILE"
-printf '\t\t};\n\n' >> "$DTS_FILE"
-printf '\t\tled_status_blue: led-1 {\n' >> "$DTS_FILE"
-printf '\t\t\tfunction = LED_FUNCTION_STATUS;\n' >> "$DTS_FILE"
-printf '\t\t\tcolor = <LED_COLOR_ID_BLUE>;\n' >> "$DTS_FILE"
-printf '\t\t\tgpios = <&gpio 8 GPIO_ACTIVE_LOW>;\n' >> "$DTS_FILE"
-printf '\t\t};\n\n' >> "$DTS_FILE"
-printf '\t\tled_status_yellow: led-2 {\n' >> "$DTS_FILE"
-printf '\t\t\tfunction = LED_FUNCTION_INDICATOR;\n' >> "$DTS_FILE"
-printf '\t\t\tcolor = <LED_COLOR_ID_YELLOW>;\n' >> "$DTS_FILE"
-printf '\t\t\tgpios = <&gpio 10 GPIO_ACTIVE_LOW>;\n' >> "$DTS_FILE"
-printf '\t\t};\n' >> "$DTS_FILE"
-printf '\t};\n\n' >> "$DTS_FILE"
-printf '\tkeys {\n' >> "$DTS_FILE"
-printf '\t\tcompatible = "gpio-keys";\n\n' >> "$DTS_FILE"
-printf '\t\treset {\n' >> "$DTS_FILE"
-printf '\t\t\tlabel = "reset";\n' >> "$DTS_FILE"
-printf '\t\t\tgpios = <&gpio 18 GPIO_ACTIVE_LOW>;\n' >> "$DTS_FILE"
-printf '\t\t\tlinux,code = <KEY_RESTART>;\n' >> "$DTS_FILE"
-printf '\t\t};\n' >> "$DTS_FILE"
-printf '\t};\n' >> "$DTS_FILE"
-printf '};\n\n' >> "$DTS_FILE"
+/dts-v1/;
 
-printf '&spi0 {\n' >> "$DTS_FILE"
-printf '\tstatus = "okay";\n\n' >> "$DTS_FILE"
-printf '\tflash@0 {\n' >> "$DTS_FILE"
-printf '\t\tcompatible = "jedec,spi-nor";\n' >> "$DTS_FILE"
-printf '\t\treg = <0>;\n' >> "$DTS_FILE"
-printf '\t\tspi-max-frequency = <10000000>;\n\n' >> "$DTS_FILE"
-printf '\t\tpartitions {\n' >> "$DTS_FILE"
-printf '\t\t\tcompatible = "fixed-partitions";\n' >> "$DTS_FILE"
-printf '\t\t\t#address-cells = <1>;\n' >> "$DTS_FILE"
-printf '\t\t\t#size-cells = <1>;\n\n' >> "$DTS_FILE"
-printf '\t\t\tpartition@0 {\n' >> "$DTS_FILE"
-printf
+#include "mt7621.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+
+/ {
+	compatible = "xiaomi,mir3g-nor", "mediatek,mt7621-soc";
+	model = "Xiaomi Mi Router 3G (NOR mod)";
+
+	aliases {
+		led-boot = &led_status_yellow;
+		led-failsafe = &led_status_red;
+		led-running = &led_status_blue;
+		led-upgrade = &led_status_yellow;
+	};
+
+	chosen {
+		bootargs = "console=ttyS0,115200n8";
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led_status_red: led-0 {
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_RED>;
+			gpios = <&gpio 6 GPIO_ACTIVE_LOW>;
+		};
+
+		led_status_blue: led-1 {
+			function = LED_FUNCTION_STATUS;
+			color = <LED_COLOR_ID_BLUE>;
+			gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
+		};
+
+		led_status_yellow: led-2 {
+			function = LED_FUNCTION_INDICATOR;
+			color = <LED_COLOR_ID_YELLOW>;
+			gpios = <&gpio 10 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	keys {
+		compatible = "gpio-keys";
+
+		reset {
+			la
