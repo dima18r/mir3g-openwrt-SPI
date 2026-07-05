@@ -61,6 +61,8 @@ jobs:
           # 3. Запускаем штатный defconfig
           make defconfig
           
+          cp .config config.txt
+          
           # 4. ХИТРОСТЬ: Если defconfig стёр или очистил файл, мы восстанавливаем его из бакапа!
           if [ ! -s .config ]; then
             echo "ВНИМАНИЕ: defconfig сбросил настройки! Заменяем на копию seed для анализа."
@@ -72,7 +74,7 @@ jobs:
         with:
           name: dotconfig
           # Передаем жесткий абсолютный путь к файлу
-          path: ${{ github.workspace }}/openwrt/.config
+          path: ${{ github.workspace }}/openwrt/config.txt
 
       - name: Download packages
         run: |
