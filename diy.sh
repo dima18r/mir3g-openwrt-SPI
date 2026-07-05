@@ -123,13 +123,18 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 &gmac1 {
 	status = "okay";
 	label = "wan";
-	phy-handle = <&ethphy4>; /* Используем готовую системную метку, ничего заново не объявляя */
+	phy-handle = <&wan_phy>; /* Указываем нашу кастомную уникальную метку */
 
 	nvmem-cells = <&macaddr_factory_e006>;
 	nvmem-cell-names = "mac-address";
 };
 
-/* Блок &mdio полностью удаляем, он больше не нужен и не вызовет конфликтов! */
+&mdio {
+	/* Объявляем PHY с уникальным именем wan_phy, привязанным к 4 порту */
+	wan_phy: ethernet-phy@4 {
+		reg = <4>;
+	};
+};
 
 &switch0 {
 	ports {
@@ -145,12 +150,13 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	};
 };
 
-&xhci {
-	status = "okay";
-};
-
+/* Полностью отключаем контроллер PCIe для полной изоляции Wi-Fi */
 &pcie {
 	status = "disabled";
+};
+
+&xhci {
+	status = "okay";
 };
 """
 
