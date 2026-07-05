@@ -134,12 +134,27 @@ dts.write("""\
 \tports {
 \t\tport@0 {
 \t\t\tstatus = "okay";
-\t\t\tlabel = "lan1";
+\t\t\tlabel = "sw0";
 \t\t};
 
 \t\tport@1 {
 \t\t\tstatus = "okay";
-\t\t\tlabel = "lan2";
+\t\t\tlabel = "sw1";
+\t\t};
+
+\t\tport@2 {
+\t\t\tstatus = "okay";
+\t\t\tlabel = "sw2";
+\t\t};
+
+\t\tport@3 {
+\t\t\tstatus = "okay";
+\t\t\tlabel = "sw3";
+\t\t};
+
+\t\tport@4 {
+\t\t\tstatus = "okay";
+\t\t\tlabel = "sw4";
 \t\t};
 
 \t\tport@6 {
@@ -199,7 +214,7 @@ echo "✓ mt7621.mk обновлён"
 cat >> package/base-files/files/etc/board.d/02_network << 'NETEOF'
 
 xiaomi_mir3g-nor_network() {
-	ucidef_set_interfaces_lan_wan "lan1 lan2" "wan"
+	ucidef_set_interfaces_lan_wan "sw0 sw1 sw2 sw3 sw4" "wan"
 }
 NETEOF
 
