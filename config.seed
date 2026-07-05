@@ -1,6 +1,1 @@
-CONFIG_TARGET_ramips=y
-CONFIG_TARGET_ramips_mt7621=y
-CONFIG_TARGET_ramips_mt7621_DEVICE_xiaomi_mir3g-nor=y
-CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_kmod-mt76x2=y
-# CONFIG_PACKAGE_kmod-mt7603 is not set
+
