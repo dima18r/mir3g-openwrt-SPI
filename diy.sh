@@ -159,7 +159,7 @@ dts.close()
 
 data = open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts").read()
 checks = [
-    ("&pcie" in data and "disabled" in data, "&pcie disabled"),
+    ("&pcie0" in data and "disabled" in data, "&pcie0 disabled"),
     ("port@6" in data,                        "port@6 CPU"),
     ("port@1" in data,                        "port@1 WAN"),
     ("port@2" in data,                        "port@2 LAN1"),
