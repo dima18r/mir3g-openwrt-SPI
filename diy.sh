@@ -123,10 +123,13 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 &gmac1 {
 	status = "okay";
 	label = "wan";
-	phy-handle = <&ethphy4>;
+	phy-handle = <&ethphy4>; /* Используем готовую системную метку, ничего заново не объявляя */
+
 	nvmem-cells = <&macaddr_factory_e006>;
 	nvmem-cell-names = "mac-address";
 };
+
+/* Блок &mdio полностью удаляем, он больше не нужен и не вызовет конфликтов! */
 
 &switch0 {
 	ports {
@@ -138,12 +141,6 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 		port@1 {
 			status = "okay";
 			label = "lan2";
-		};
-
-		port@6 {
-			status = "okay";
-			label = "cpu";
-			ethernet = <&gmac0>;
 		};
 	};
 };
