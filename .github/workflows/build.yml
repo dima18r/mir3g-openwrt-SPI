@@ -38,9 +38,12 @@ jobs:
       - name: Cache toolchain
         uses: actions/cache@v4
         with:
-          path: openwrt/staging_dir/toolchain-mipsel_24kc_musl
-          key: openwrt-toolchain-24.10-mipsel
-          restore-keys: openwrt-toolchain-24.10-
+          path: |
+            openwrt/staging_dir
+            openwrt/build_dir/host
+          key: openwrt-toolchain-24.10-mipsel-${{ github.run_id }}
+          restore-keys: |
+            openwrt-toolchain-24.10-mipsel-
 
       - name: Update and install feeds
         run: |
@@ -83,6 +86,13 @@ jobs:
         run: |
           cd openwrt
           make -j$(nproc) || make -j1 V=s
+
+      - name: Show staging_dir contents
+        run: |
+          echo "--- staging_dir ---"
+          ls openwrt/staging_dir/
+          echo "--- toolchain folder name ---"
+          ls openwrt/staging_dir/ | grep toolchain
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
