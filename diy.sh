@@ -5,7 +5,6 @@ echo "=== Добавляем устройство xiaomi_mir3g-nor ==="
 
 DTS_FILE="target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts"
 
-# 1. Пишем DTS через Python — без конфликтов меток и с отключенным PCIe под сгоревший Wi-Fi
 python3 << 'PYEOF'
 content = """// SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -131,15 +130,31 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	nvmem-cell-names = "mac-address";
 };
 
-// Безопасное переопределение существующего порта без duplicate_label
 &ethphy4 {
 	status = "okay";
 };
 
 &switch0 {
 	ports {
-		port@0 { status = "okay"; label = "lan0"; }; // LAN 1
-		port@1 { status = "okay"; label = "lan1"; }; // LAN 2
+		port@0 {
+			status = "okay";
+			label = "lan0";
+		};
+
+		port@1 {
+			status = "okay";
+			label = "lan1";
+		};
+
+		port@6 {
+			status = "okay";
+			label = "cpu";
+			ethernet = <&gmac0>;
+			fixed-link {
+				speed = <1000>;
+				full-duplex;
+			};
+		};
 	};
 };
 
@@ -147,7 +162,6 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	status = "okay";
 };
 
-// Полностью изолируем сгоревший Wi-Fi чип на шине PCIe
 &pcie {
 	status = "disabled";
 };
@@ -158,7 +172,6 @@ with open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts", "w") as f:
 
 print("DTS записан успешно")
 
-# Проверяем наличие фикса изоляции PCIe
 with open("target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts") as f:
     data = f.read()
     if '&pcie' in data and 'disabled' in data:
@@ -171,11 +184,8 @@ PYEOF
 echo "✓ DTS создан"
 
 # =====================================================
-# 2. Запись устройства в систему сборки (с очисткой от беспроводных пакетов)
+# 2. Запись устройства в систему сборки
 # =====================================================
-
-# Дописываем новое устройство в Makefile mt7621.mk
-# Исключаем беспроводные пакеты (-wpad, -kmod-mt7615...), так как чип мертв
 cat << 'EOF' >> target/linux/ramips/image/mt7621.mk
 
 define Device/xiaomi_mir3g-nor
@@ -188,12 +198,11 @@ endef
 TARGET_DEVICES += xiaomi_mir3g-nor
 EOF
 
-echo "✓ Запись в mt7621.mk добавлена (пакеты оптимизированы под 16МБ без Wi-Fi)"
+echo "✓ Запись в mt7621.mk добавлена"
 
 # =====================================================
 # 3. Сетевые настройки
 # =====================================================
-
 cat >> package/base-files/files/etc/board.d/02_network << 'NETEOF'
 
 xiaomi_mir3g-nor_network() {
@@ -201,5 +210,5 @@ xiaomi_mir3g-nor_network() {
 }
 NETEOF
 
-echo "✓ Сетевые настройки добавили"
+echo "✓ Сетевые настройки добавлены"
 echo "=== Готово ==="
