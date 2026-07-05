@@ -41,9 +41,9 @@ jobs:
           path: |
             openwrt/staging_dir
             openwrt/build_dir/host
-          key: openwrt-toolchain-24.10-mipsel-v3
+          key: openwrt-toolchain-24.10-mipsel-v4
           restore-keys: |
-            openwrt-toolchain-24.10-mipsel-v3
+            openwrt-toolchain-24.10-mipsel-v4
             
       - name: Update and install feeds
         run: |
