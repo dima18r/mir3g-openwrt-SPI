@@ -50,18 +50,29 @@ jobs:
 
       - name: Load custom config
         run: |
-          cp ./config.seed openwrt/.config
+          # 1. Принудительно делаем резервную копию вашего seed прямо в папку openwrt под другим именем
+          cp config.seed openwrt/config.seed.bak
+          
           cd openwrt
-          make defconfig 2>&1 | head -50
-          echo "--- Проверка устройства в конфиге ---"
-          grep "mir3g-nor" .config || echo "ВНИМАНИЕ: устройство не найдено в конфиге!"
-          ls -la .config
+          
+          # 2. Переименовываем его в рабочий .config перед запуском defconfig
+          cp config.seed.bak .config
+          
+          # 3. Запускаем штатный defconfig
+          make defconfig
+          
+          # 4. ХИТРОСТЬ: Если defconfig стёр или очистил файл, мы восстанавливаем его из бакапа!
+          if [ ! -s .config ]; then
+            echo "ВНИМАНИЕ: defconfig сбросил настройки! Заменяем на копию seed для анализа."
+            cp config.seed.bak .config
+          fi
 
       - name: Upload .config for inspection
         uses: actions/upload-artifact@v4
         with:
           name: dotconfig
-          path: openwrt/.config
+          # Передаем жесткий абсолютный путь к файлу
+          path: ${{ github.workspace }}/openwrt/.config
 
       - name: Download packages
         run: |
