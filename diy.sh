@@ -128,12 +128,6 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	nvmem-cell-names = "mac-address";
 };
 
-&mdio {
-	ethphy4: ethernet-phy@4 {
-		reg = <4>;
-	};
-};
-
 &switch0 {
 	ports {
 		port@0 {
