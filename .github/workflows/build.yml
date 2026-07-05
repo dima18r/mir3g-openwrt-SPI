@@ -41,10 +41,10 @@ jobs:
           path: |
             openwrt/staging_dir
             openwrt/build_dir/host
-          key: openwrt-toolchain-24.10-mipsel-${{ github.run_id }}
+          key: openwrt-toolchain-24.10-mipsel-v3
           restore-keys: |
-            openwrt-toolchain-24.10-mipsel-
-
+            openwrt-toolchain-24.10-mipsel-v3
+            
       - name: Update and install feeds
         run: |
           cd openwrt
