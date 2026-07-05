@@ -3,8 +3,6 @@ set -e
 
 echo "=== Добавляем устройство xiaomi_mir3g-nor ==="
 
-DTS_FILE="target/linux/ramips/dts/mt7621_xiaomi_mir3g-nor.dts"
-
 python3 << 'PYEOF'
 content = """// SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -70,7 +68,7 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
-		spi-max-frequency = <50000000>;
+		spi-max-frequency = <10000000>;
 
 		partitions {
 			compatible = "fixed-partitions";
@@ -130,30 +128,28 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	nvmem-cell-names = "mac-address";
 };
 
-&ethphy4 {
-	status = "okay";
+&mdio {
+	ethphy4: ethernet-phy@4 {
+		reg = <4>;
+	};
 };
 
 &switch0 {
 	ports {
 		port@0 {
 			status = "okay";
-			label = "lan0";
+			label = "lan1";
 		};
 
 		port@1 {
 			status = "okay";
-			label = "lan1";
+			label = "lan2";
 		};
 
 		port@6 {
 			status = "okay";
 			label = "cpu";
 			ethernet = <&gmac0>;
-			fixed-link {
-				speed = <1000>;
-				full-duplex;
-			};
 		};
 	};
 };
@@ -183,30 +179,26 @@ PYEOF
 
 echo "✓ DTS создан"
 
-# =====================================================
-# 2. Запись устройства в систему сборки
-# =====================================================
-cat << 'EOF' >> target/linux/ramips/image/mt7621.mk
+cat >> target/linux/ramips/image/mt7621.mk << 'MKEOF'
 
 define Device/xiaomi_mir3g-nor
+  $(Device/dsa-migration)
+  $(Device/uimage-lzma-loader)
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Xiaomi
-  DEVICE_MODEL := Mi Router 3G (SPI NOR Mod)
-  DEVICE_COMPAT_COMPATIBLE := xiaomi,mir3g-nor
-  DEVICE_PACKAGES := kmod-usb3 kmod-usb-storage kmod-fs-ext4 -wpad-basic-mbedtls -kmod-mt7615e -kmod-mt7615-firmware -kmod-mt7603e -kmod-mt76x2e -kmod-mt76-core
+  DEVICE_MODEL := Mi Router 3G
+  DEVICE_VARIANT := NOR mod
+  DEVICE_PACKAGES := kmod-usb3 kmod-usb-ledtrig-usbport uboot-envtools
 endef
 TARGET_DEVICES += xiaomi_mir3g-nor
-EOF
+MKEOF
 
 echo "✓ Запись в mt7621.mk добавлена"
 
-# =====================================================
-# 3. Сетевые настройки
-# =====================================================
 cat >> package/base-files/files/etc/board.d/02_network << 'NETEOF'
 
 xiaomi_mir3g-nor_network() {
-	ucidef_set_interfaces_lan_wan "lan0 lan1" "wan"
+	ucidef_set_interfaces_lan_wan "lan1 lan2" "wan"
 }
 NETEOF
 
