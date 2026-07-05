@@ -151,7 +151,7 @@ dts.write("""\
 \tstatus = "okay";
 };
 
-&pcie {
+&pcie0 {
 \tstatus = "disabled";
 };
 """)
