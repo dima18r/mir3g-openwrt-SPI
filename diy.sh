@@ -118,6 +118,16 @@ dts.write("""\
 \tnvmem-cell-names = "mac-address";
 };
 
+&gmac1 {
+\tstatus = "disabled";
+};
+
+&switch0 {
+
+&gmac1 {
+\tstatus = "disabled";
+};
+
 &switch0 {
 \tports {
 \t\tport@1 {
