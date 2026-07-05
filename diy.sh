@@ -172,8 +172,6 @@ echo "✓ DTS создан"
 
 cat >> target/linux/ramips/image/mt7621.mk << 'MKEOF'
 
-cat >> target/linux/ramips/image/mt7621.mk << 'MKEOF'
-
 define Device/xiaomi_mir3g-nor
   IMAGE_SIZE := 16064k
   DEVICE_VENDOR := Xiaomi
