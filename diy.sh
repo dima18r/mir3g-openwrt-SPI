@@ -123,12 +123,6 @@ dts.write("""\
 };
 
 &switch0 {
-
-&gmac1 {
-\tstatus = "disabled";
-};
-
-&switch0 {
 \tports {
 \t\tport@1 {
 \t\t\tstatus = "okay";
