@@ -164,7 +164,7 @@ checks = [
     ("port@1" in data,                        "port@1 WAN"),
     ("port@2" in data,                        "port@2 LAN1"),
     ("port@3" in data,                        "port@3 LAN2"),
-    ("&gmac1" not in data,                    "нет &gmac1"),
+    ("&gmac1" in data,                        "&gmac1 disabled"),
     ("&mdio" not in data,                     "нет &mdio"),
     ("0x50000 0xfb0000" in data,              "разметка firmware"),
 ]
