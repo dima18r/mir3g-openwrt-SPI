@@ -26,7 +26,7 @@ content = """// SPDX-License-Identifier: GPL-2.0-or-later
 	};
 
 	chosen {
-		bootargs = "console=ttyS0,115200n8";
+		bootargs = "console=ttyS0,115200n8 earlycon=uart8250,mmio32,0x1e000c00";
 	};
 
 	leds {
