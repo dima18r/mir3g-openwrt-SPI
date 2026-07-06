@@ -26,7 +26,7 @@ jobs:
 
       - name: Clone OpenWrt source
         run: |
-          git clone --depth 1 -b openwrt-24.10 https://github.com/openwrt/openwrt.git openwrt
+          git clone --depth 1 -b v25.12.5 https://github.com/openwrt/openwrt.git openwrt
 
       - name: Cache downloads
         uses: actions/cache@v4
@@ -34,17 +34,7 @@ jobs:
           path: openwrt/dl
           key: openwrt-dl-${{ hashFiles('config.seed') }}
           restore-keys: openwrt-dl-
-
-      - name: Cache toolchain
-        uses: actions/cache@v4
-        with:
-          path: |
-            openwrt/staging_dir
-            openwrt/build_dir/host
-          key: openwrt-toolchain-24.10-mipsel-v4
-          restore-keys: |
-            openwrt-toolchain-24.10-mipsel-v4
-            
+          
       - name: Update and install feeds
         run: |
           cd openwrt
